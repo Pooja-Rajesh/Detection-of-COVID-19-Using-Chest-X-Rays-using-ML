@@ -1,0 +1,554 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Covid 19 Detector",
+      "provenance": [],
+      "collapsed_sections": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "bmCp4NhNa0Nz",
+        "outputId": "b4567ed1-2480-4f6d-8e68-89f956cd6c03"
+      },
+      "source": [
+        "#Dataset : http://cb.lk/covid_19\r\n",
+        "!wget http://cb.lk/covid_19\r\n",
+        "\r\n"
+      ],
+      "execution_count": 37,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "--2021-01-21 08:29:31--  http://cb.lk/covid_19\n",
+            "Resolving cb.lk (cb.lk)... 159.89.170.74\n",
+            "Connecting to cb.lk (cb.lk)|159.89.170.74|:80... connected.\n",
+            "HTTP request sent, awaiting response... 301 Moved Permanently\n",
+            "Location: https://cb.lk/covid_19 [following]\n",
+            "--2021-01-21 08:29:32--  https://cb.lk/covid_19\n",
+            "Connecting to cb.lk (cb.lk)|159.89.170.74|:443... connected.\n",
+            "HTTP request sent, awaiting response... 302 Found\n",
+            "Location: https://www.dropbox.com/s/7rjw6oet4za01op/CovidDataset-20200427T133042Z-001.zip?dl=0 [following]\n",
+            "--2021-01-21 08:29:33--  https://www.dropbox.com/s/7rjw6oet4za01op/CovidDataset-20200427T133042Z-001.zip?dl=0\n",
+            "Resolving www.dropbox.com (www.dropbox.com)... 162.125.5.18, 2620:100:601d:18::a27d:512\n",
+            "Connecting to www.dropbox.com (www.dropbox.com)|162.125.5.18|:443... connected.\n",
+            "HTTP request sent, awaiting response... 301 Moved Permanently\n",
+            "Location: /s/raw/7rjw6oet4za01op/CovidDataset-20200427T133042Z-001.zip [following]\n",
+            "--2021-01-21 08:29:33--  https://www.dropbox.com/s/raw/7rjw6oet4za01op/CovidDataset-20200427T133042Z-001.zip\n",
+            "Reusing existing connection to www.dropbox.com:443.\n",
+            "HTTP request sent, awaiting response... 302 Found\n",
+            "Location: https://uc5c8aaac59e083902338fa173be.dl.dropboxusercontent.com/cd/0/inline/BHYnNEnFuFWkCnUb96iJAlAjUiRou7Xpcoxn7C1L0PkAPmh40i7NBAMQNq0r0u1cOU6wb_86jsbhEVRDWGM0EQn-TuxHZ6xOAYw3eDGm7ZOfjS7kXQYfEYdhzLqjXK9YEhA/file# [following]\n",
+            "--2021-01-21 08:29:34--  https://uc5c8aaac59e083902338fa173be.dl.dropboxusercontent.com/cd/0/inline/BHYnNEnFuFWkCnUb96iJAlAjUiRou7Xpcoxn7C1L0PkAPmh40i7NBAMQNq0r0u1cOU6wb_86jsbhEVRDWGM0EQn-TuxHZ6xOAYw3eDGm7ZOfjS7kXQYfEYdhzLqjXK9YEhA/file\n",
+            "Resolving uc5c8aaac59e083902338fa173be.dl.dropboxusercontent.com (uc5c8aaac59e083902338fa173be.dl.dropboxusercontent.com)... 162.125.5.15, 2620:100:601d:15::a27d:50f\n",
+            "Connecting to uc5c8aaac59e083902338fa173be.dl.dropboxusercontent.com (uc5c8aaac59e083902338fa173be.dl.dropboxusercontent.com)|162.125.5.15|:443... connected.\n",
+            "HTTP request sent, awaiting response... 302 Found\n",
+            "Location: /cd/0/inline2/BHZeUNxZDcww1yjFHnAlQW2oRjtMfhCwgmdaTni5GFezrxwVTjYivq9VnW8LGFhKplzBQ6L2KhFNfrB4FnimSoW158v3GRPNO1MWuQUQIgxRGXjr2QAM3OLydZ-K9lnDo7COFL83Yi1iFUCJeieA4DNiTope7k8Shb_nHWVvLAnW20hv0xDUcOygp2rA-YqZzp1VFD4xHOtHc53YUApXq53Tj_WQlqnwduwdfKg3ls8szVn9lZBZy6hmphyHoEulDX497nSt0zvkBWydcsFhn3GhYDiK17vMxgQreeG46rePJp4CXtcNpunaRhHB_S2ivI3MuMdmKVkD0feDQSHCTIgLBZyW2Zcw2RzZc4eo7MYIpQ/file [following]\n",
+            "--2021-01-21 08:29:34--  https://uc5c8aaac59e083902338fa173be.dl.dropboxusercontent.com/cd/0/inline2/BHZeUNxZDcww1yjFHnAlQW2oRjtMfhCwgmdaTni5GFezrxwVTjYivq9VnW8LGFhKplzBQ6L2KhFNfrB4FnimSoW158v3GRPNO1MWuQUQIgxRGXjr2QAM3OLydZ-K9lnDo7COFL83Yi1iFUCJeieA4DNiTope7k8Shb_nHWVvLAnW20hv0xDUcOygp2rA-YqZzp1VFD4xHOtHc53YUApXq53Tj_WQlqnwduwdfKg3ls8szVn9lZBZy6hmphyHoEulDX497nSt0zvkBWydcsFhn3GhYDiK17vMxgQreeG46rePJp4CXtcNpunaRhHB_S2ivI3MuMdmKVkD0feDQSHCTIgLBZyW2Zcw2RzZc4eo7MYIpQ/file\n",
+            "Reusing existing connection to uc5c8aaac59e083902338fa173be.dl.dropboxusercontent.com:443.\n",
+            "HTTP request sent, awaiting response... 200 OK\n",
+            "Length: 140830621 (134M) [application/zip]\n",
+            "Saving to: ‘covid_19.1’\n",
+            "\n",
+            "covid_19.1          100%[===================>] 134.31M  27.3MB/s    in 4.9s    \n",
+            "\n",
+            "2021-01-21 08:29:40 (27.3 MB/s) - ‘covid_19.1’ saved [140830621/140830621]\n",
+            "\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ACsC04jBbjdN",
+        "outputId": "b9b86bd6-8307-48f8-f6bd-5385a843d473"
+      },
+      "source": [
+        "!unzip covid_19"
+      ],
+      "execution_count": 38,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Archive:  covid_19\n",
+            "replace CovidDataset/Val/Covid/88de9d8c39e946abd495b37cd07d89e5-6531-0.jpg? [y]es, [n]o, [A]ll, [N]one, [r]ename: y\n",
+            "  inflating: CovidDataset/Val/Covid/88de9d8c39e946abd495b37cd07d89e5-6531-0.jpg  \n",
+            "replace CovidDataset/Val/Covid/covid-19-pneumonia-8.jpg? [y]es, [n]o, [A]ll, [N]one, [r]ename: y\n",
+            "  inflating: CovidDataset/Val/Covid/covid-19-pneumonia-8.jpg  \n",
+            "replace CovidDataset/Val/Covid/85E52EB3-56E9-4D67-82DA-DEA247C82886.jpeg? [y]es, [n]o, [A]ll, [N]one, [r]ename: y\n",
+            "  inflating: CovidDataset/Val/Covid/85E52EB3-56E9-4D67-82DA-DEA247C82886.jpeg  \n",
+            "replace CovidDataset/Val/Covid/4-x-day1.jpg? [y]es, [n]o, [A]ll, [N]one, [r]ename: y\n",
+            "  inflating: CovidDataset/Val/Covid/4-x-day1.jpg  \n",
+            "replace CovidDataset/Val/Covid/covid-19-pneumonia-53.jpg? [y]es, [n]o, [A]ll, [N]one, [r]ename: y\n",
+            "  inflating: CovidDataset/Val/Covid/covid-19-pneumonia-53.jpg  \n",
+            "replace CovidDataset/Val/Covid/4e43e48d52c9e2d4c6c1fb9bc1544f_jumbo.jpeg? [y]es, [n]o, [A]ll, [N]one, [r]ename: "
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "g-w35FJSEOjB"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "pt8PeWRDbz4o"
+      },
+      "source": [
+        "TRAIN_PATH= \"CovidDataset/Train\"\r\n",
+        "VAL_PATH= \"CovidDataset/Test\""
+      ],
+      "execution_count": 39,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "GDhHTOyBzm2M"
+      },
+      "source": [
+        "import numpy as np\r\n",
+        "import matplotlib.pyplot as plt\r\n",
+        "import keras\r\n",
+        "from keras.layers import *\r\n",
+        "from keras.models import *\r\n",
+        "from keras.preprocessing import image"
+      ],
+      "execution_count": 40,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "g5orkWF1z_KG"
+      },
+      "source": [
+        "#CNN Based Model in Keras\r\n",
+        "model= Sequential()\r\n",
+        "model.add(Conv2D(32,kernel_size=(3,3),activation='relu',input_shape=(224,224,3)))\r\n",
+        "model.add(Conv2D(64,(3,3),activation='relu'))\r\n",
+        "model.add(MaxPooling2D(pool_size=(2,2)))\r\n",
+        "model.add(Dropout(0.25))\r\n",
+        "\r\n",
+        "model.add(Conv2D(64,(3,3),activation='relu'))\r\n",
+        "model.add(MaxPooling2D(pool_size=(2,2)))\r\n",
+        "model.add(Dropout(0.25))\r\n",
+        "\r\n",
+        "model.add(Conv2D(64,(3,3),activation='relu'))\r\n",
+        "model.add(MaxPooling2D(pool_size=(2,2)))\r\n",
+        "model.add(Dropout(0.25))\r\n",
+        "\r\n",
+        "model.add(Flatten())\r\n",
+        "model.add(Dense(64,activation='relu'))\r\n",
+        "model.add(Dropout(0.25))\r\n",
+        "model.add(Dense(1,activation='sigmoid'))\r\n",
+        "\r\n",
+        "model.compile(loss=keras.losses.binary_crossentropy,optimizer='adam',metrics=['accuracy'])"
+      ],
+      "execution_count": 12,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "pwlcx4nz4Cq4",
+        "outputId": "558ade80-8f3d-4fae-9f6f-ba54300b3f5b"
+      },
+      "source": [
+        "model.summary()"
+      ],
+      "execution_count": 13,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Model: \"sequential_2\"\n",
+            "_________________________________________________________________\n",
+            "Layer (type)                 Output Shape              Param #   \n",
+            "=================================================================\n",
+            "conv2d_4 (Conv2D)            (None, 222, 222, 32)      896       \n",
+            "_________________________________________________________________\n",
+            "conv2d_5 (Conv2D)            (None, 220, 220, 64)      18496     \n",
+            "_________________________________________________________________\n",
+            "max_pooling2d (MaxPooling2D) (None, 110, 110, 64)      0         \n",
+            "_________________________________________________________________\n",
+            "dropout (Dropout)            (None, 110, 110, 64)      0         \n",
+            "_________________________________________________________________\n",
+            "conv2d_6 (Conv2D)            (None, 108, 108, 64)      36928     \n",
+            "_________________________________________________________________\n",
+            "max_pooling2d_1 (MaxPooling2 (None, 54, 54, 64)        0         \n",
+            "_________________________________________________________________\n",
+            "dropout_1 (Dropout)          (None, 54, 54, 64)        0         \n",
+            "_________________________________________________________________\n",
+            "conv2d_7 (Conv2D)            (None, 52, 52, 64)        36928     \n",
+            "_________________________________________________________________\n",
+            "max_pooling2d_2 (MaxPooling2 (None, 26, 26, 64)        0         \n",
+            "_________________________________________________________________\n",
+            "dropout_2 (Dropout)          (None, 26, 26, 64)        0         \n",
+            "_________________________________________________________________\n",
+            "flatten (Flatten)            (None, 43264)             0         \n",
+            "_________________________________________________________________\n",
+            "dense (Dense)                (None, 64)                2768960   \n",
+            "_________________________________________________________________\n",
+            "dropout_3 (Dropout)          (None, 64)                0         \n",
+            "_________________________________________________________________\n",
+            "dense_1 (Dense)              (None, 1)                 65        \n",
+            "=================================================================\n",
+            "Total params: 2,862,273\n",
+            "Trainable params: 2,862,273\n",
+            "Non-trainable params: 0\n",
+            "_________________________________________________________________\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "f9kIKmn34VQU",
+        "outputId": "9936f859-bab8-48e9-83ab-ba50aead4a96"
+      },
+      "source": [
+        "#Train from scratch\r\n",
+        "train_datagen = image.ImageDataGenerator(\r\n",
+        "    rescale= 1./255,\r\n",
+        "    shear_range= 0.2,\r\n",
+        "    zoom_range=0.2,\r\n",
+        "    horizontal_flip= True,\r\n",
+        ")\r\n",
+        "test_dataset = image.ImageDataGenerator(rescale=1./255)\r\n",
+        "\r\n",
+        "train_generator = train_datagen.flow_from_directory(\r\n",
+        "    'CovidDataset/Train',\r\n",
+        "    target_size=(224,224),\r\n",
+        "    batch_size = 32,\r\n",
+        "    class_mode = 'binary')\r\n",
+        "\r\n"
+      ],
+      "execution_count": 15,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Found 224 images belonging to 2 classes.\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "wqxjYI4v5dWx",
+        "outputId": "bbd05d10-8c27-4388-d575-bcdcf8b59227"
+      },
+      "source": [
+        "train_generator.class_indices"
+      ],
+      "execution_count": 16,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "{'Covid': 0, 'Normal': 1}"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 16
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "M5l_zL105lkq",
+        "outputId": "daafcb7d-a6ff-446c-80a4-79130afd4d93"
+      },
+      "source": [
+        "validation_generator = test_dataset.flow_from_directory(\r\n",
+        "    'CovidDataset/Val',\r\n",
+        "    target_size=(224,224),\r\n",
+        "    batch_size = 32,\r\n",
+        "    class_mode = 'binary'\r\n",
+        "    \r\n",
+        ")"
+      ],
+      "execution_count": 17,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Found 60 images belonging to 2 classes.\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "jTiAwyHj5_uT",
+        "outputId": "11f80b42-b2a6-4820-916c-53bf2b0c5940"
+      },
+      "source": [
+        "hist = model.fit(\r\n",
+        "    train_generator,\r\n",
+        "    steps_per_epoch=4,\r\n",
+        "    epochs = 10,\r\n",
+        "    validation_data =validation_generator,\r\n",
+        "    validation_steps =2\r\n",
+        ")"
+      ],
+      "execution_count": 22,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Epoch 1/10\n",
+            "4/4 [==============================] - 43s 11s/step - loss: 0.4504 - accuracy: 0.8125 - val_loss: 0.3058 - val_accuracy: 0.9333\n",
+            "Epoch 2/10\n",
+            "4/4 [==============================] - 42s 11s/step - loss: 0.3559 - accuracy: 0.8516 - val_loss: 0.3299 - val_accuracy: 0.8667\n",
+            "Epoch 3/10\n",
+            "4/4 [==============================] - 42s 11s/step - loss: 0.3834 - accuracy: 0.8359 - val_loss: 0.3614 - val_accuracy: 0.9500\n",
+            "Epoch 4/10\n",
+            "4/4 [==============================] - 42s 11s/step - loss: 0.4103 - accuracy: 0.7969 - val_loss: 0.3653 - val_accuracy: 0.9667\n",
+            "Epoch 5/10\n",
+            "4/4 [==============================] - 45s 12s/step - loss: 0.2933 - accuracy: 0.9219 - val_loss: 0.1928 - val_accuracy: 0.9500\n",
+            "Epoch 6/10\n",
+            "4/4 [==============================] - 42s 11s/step - loss: 0.2559 - accuracy: 0.8906 - val_loss: 0.1237 - val_accuracy: 0.9667\n",
+            "Epoch 7/10\n",
+            "4/4 [==============================] - 42s 11s/step - loss: 0.2621 - accuracy: 0.8984 - val_loss: 0.3142 - val_accuracy: 0.9833\n",
+            "Epoch 8/10\n",
+            "4/4 [==============================] - 42s 10s/step - loss: 0.1959 - accuracy: 0.9531 - val_loss: 0.1011 - val_accuracy: 0.9833\n",
+            "Epoch 9/10\n",
+            "4/4 [==============================] - 41s 10s/step - loss: 0.2061 - accuracy: 0.9219 - val_loss: 0.1098 - val_accuracy: 0.9500\n",
+            "Epoch 10/10\n",
+            "4/4 [==============================] - 41s 11s/step - loss: 0.1959 - accuracy: 0.9141 - val_loss: 0.1584 - val_accuracy: 0.9667\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "lkjR7djP_fvg"
+      },
+      "source": [
+        "\r\n",
+        "import os"
+      ],
+      "execution_count": 101,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "TvgvlmU_BRGp",
+        "outputId": "46c32922-0d63-432b-d1fe-0d99282a32c0"
+      },
+      "source": [
+        "train_generator.class_indices"
+      ],
+      "execution_count": 111,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "{'Covid': 0, 'Normal': 1}"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 111
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "jxeQF7o0BXkE"
+      },
+      "source": [
+        "y_actual=[]\r\n",
+        "y_test=[]"
+      ],
+      "execution_count": 112,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "3I8huod9Bdga"
+      },
+      "source": [
+        "for i in os.listdir(\"./CovidDataset/Val/Normal\"):\r\n",
+        "  img= image.load_img(\"./CovidDataset/Val/Normal/\"+i,target_size=(224,224))\r\n",
+        "  img= image.img_to_array(img)\r\n",
+        "  #img= np.expand_dims(img,axis=0)\r\n",
+        "  #p=model.predict_classes(img)\r\n",
+        "  p=model.predict(np.expand_dims(img,axis=0))\r\n",
+        "  y_test.append(p[0,0])\r\n",
+        "  y_actual.append(1)\r\n"
+      ],
+      "execution_count": 113,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "1WlwKdfeCK3z"
+      },
+      "source": [
+        "for i in os.listdir(\"./CovidDataset/Val/Normal\"):\r\n",
+        "  img= image.load_img(\"./CovidDataset/Val/Normal/\"+i,target_size=(224,224))\r\n",
+        "  img= image.img_to_array(img)\r\n",
+        "  #img= np.expand_dims(img,axis=0)\r\n",
+        "  p=model.predict(np.expand_dims(img,axis=0))\r\n",
+        "  #p=model.predict_class(img)\r\n",
+        "  y_test.append(p[0,0])\r\n",
+        "  y_actual.append(1)\r\n",
+        "  "
+      ],
+      "execution_count": 114,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "mrb8dko6CUjS"
+      },
+      "source": [
+        "y_actual=np.array(y_actual)\r\n",
+        "y_test=np.array(y_test)"
+      ],
+      "execution_count": 115,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "OwREWHGeCdYa"
+      },
+      "source": [
+        "from sklearn.metrics import confusion_matrix"
+      ],
+      "execution_count": 116,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "0_rkVLK5Chqp"
+      },
+      "source": [
+        "cm = confusion_matrix( y_actual,y_test.round())"
+      ],
+      "execution_count": 120,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "eWNVwBurCo7v"
+      },
+      "source": [
+        "import seaborn as sns"
+      ],
+      "execution_count": 121,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 287
+        },
+        "id": "mbCPUe8oCsW8",
+        "outputId": "3db92467-78e4-48fa-bc70-7f1be2d7a268"
+      },
+      "source": [
+        "sns.heatmap(cm, cmap=\"plasma\", annot=True)"
+      ],
+      "execution_count": 122,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "<matplotlib.axes._subplots.AxesSubplot at 0x7f307aa2d400>"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 122
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "image/png": "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\n",
+            "text/plain": [
+              "<Figure size 432x288 with 2 Axes>"
+            ]
+          },
+          "metadata": {
+            "tags": [],
+            "needs_background": "light"
+          }
+        }
+      ]
+    }
+  ]
+}
